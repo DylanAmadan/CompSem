@@ -14,7 +14,7 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 from data_loader import fetch_and_process_data, debug_data_subset, WordIndex, pad_sequence, load_embeddings, prepare_minibatch
 from torch.utils.data import DataLoader
-from new_arch import Classifier, AWE, LSTM, BiLSTM, BiLSTM_MaxPool
+from alt_arch import Classifier, AWE, LSTM, BiLSTM, BiLSTM_MaxPool
 
 from tqdm import tqdm
 
@@ -89,24 +89,21 @@ def setup_model_and_data(args, device):
     # Load the embeddings matrix
     embedding_matrix = load_embeddings('data/embedding_matrix.pickle')
 
-    # Encoder types dictionary with lambda functions for initialization
+    # Encoder types dictionary without device parameter in lambda
     encoder_types = {
-        'AWE': lambda vocab_size, embedding_dim, pretrained_embeddings, device: AWE(vocab_size, embedding_dim, pretrained_embeddings, device),
-        'LSTM': lambda vocab_size, embedding_dim, hidden_size, pretrained_embeddings, device: LSTM(vocab_size, embedding_dim, hidden_size, pretrained_embeddings, device),
-        'BiLSTM': lambda vocab_size, embedding_dim, hidden_size, pretrained_embeddings, device: BiLSTM(vocab_size, embedding_dim, hidden_size, pretrained_embeddings, device),
-        'BiLSTM_MaxPool': lambda vocab_size, embedding_dim, hidden_size, pretrained_embeddings, device: BiLSTM_MaxPool(vocab_size, embedding_dim, hidden_size, pretrained_embeddings, device)
+        'AWE': lambda vocab_size, embedding_dim, pretrained_embeddings: AWE(vocab_size, embedding_dim, pretrained_embeddings),
+        'LSTM': lambda vocab_size, embedding_dim, hidden_size, pretrained_embeddings: LSTM(vocab_size, embedding_dim, hidden_size, pretrained_embeddings),
+        'BiLSTM': lambda vocab_size, embedding_dim, hidden_size, pretrained_embeddings: BiLSTM(vocab_size, embedding_dim, hidden_size, pretrained_embeddings),
+        'BiLSTM_MaxPool': lambda vocab_size, embedding_dim, hidden_size, pretrained_embeddings: BiLSTM_MaxPool(vocab_size, embedding_dim, hidden_size, pretrained_embeddings)
     }
 
-    # Conditional instantiation of the encoder
     if args.encoder in ['LSTM', 'BiLSTM', 'BiLSTM_MaxPool']:
-        # Encoders requiring a hidden_size parameter
-        encoder = encoder_types[args.encoder](len(embedding_matrix), 300, args.hidden_size, embedding_matrix, device)
+        encoder = encoder_types[args.encoder](len(embedding_matrix), 300, args.hidden_size, embedding_matrix)
     else:
-        # Encoders not requiring a hidden_size parameter (like AWE)
-        encoder = encoder_types[args.encoder](len(embedding_matrix), 300, embedding_matrix, device)
+        encoder = encoder_types[args.encoder](len(embedding_matrix), 300, embedding_matrix)
 
-    # Initialize the classifier model using the encoder
-    model = Classifier(encoder, 512, 3, device)
+    model = Classifier(encoder, 512, 3)
+    model.to(device)
 
     # Create data loaders for training and validation sets
     train_loader = DataLoader(dataset["train"], batch_size=args.batch_size, collate_fn=lambda batch: prepare_minibatch(batch, vocab), shuffle=True)

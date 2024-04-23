@@ -18,4 +18,4 @@ module load PyTorch/1.12.0-foss-2022a-CUDA-11.7.0  # Assuming PyTorch from the s
 source activate Mariia
 cd $HOME/opo/Bigold
 
-srun python -u model_train.py --encoder BiLSTM_MaxPool --session_name BiLSTM_MaxPool --epochs 10 --lr 0.01
+srun python -u model_train.py --encoder BiLSTM_MaxPool --session_name BiLSTM_MaxPoolv2 --epochs 10 --lr 0.01
