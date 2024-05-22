@@ -1,6 +1,6 @@
-# CompSem -- ATCS Practical 1
+# CompSem -- NLI
 
-The first practical of the Advanced Topics in Computational Semantics course delves into the realm of learning general-purpose sentence representations within the context of natural language inference (NLI). Our objective encompasses:
+Our objective encompasses:
 
 - Implementing four neural models to classify sentence pairs based on their relation.
 - Training these models utilizing the Stanford Natural Language Inference (SNLI) corpus (Bowman et al., 2015).
